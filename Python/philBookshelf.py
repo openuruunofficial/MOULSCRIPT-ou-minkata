@@ -74,7 +74,8 @@ class philBookshelf(ptModifier):
         ptModifier.__init__(self)
         self.id = 5327
         self.version = 1
-        print "__init__philBookshelf v.", self.version
+        minor = 1
+        print ('__init__philBookshelf v. %d.%d' % (self.version, minor))
 
 
     def OnServerInitComplete(self):
@@ -87,10 +88,13 @@ class philBookshelf(ptModifier):
 
 
     def OnNotify(self,state,id,events):
-        print "notified: state = %d, id = %d" % (state,id)
+        boolLinkerIsMe = false
+        if PtWasLocallyNotified(self.key):
+            boolLinkerIsMe = true
+        print ('philBookshelf.OnNotify(): state = %d, id = %d, me = %s' % (state, id, boolLinkerIsMe))
         
         if id == actBookshelfExit.id:
-            self.IDisengageShelf()
+            self.IDisengageShelf(boolLinkerIsMe)
             return
 
         if id == SeekBehavior.id:
@@ -123,12 +127,13 @@ class philBookshelf(ptModifier):
         elif id == actBook.id and state:
             actBook.disable()
             respPresentBook.run(self.key)
-        
-        elif id == respPresentBook.id:
+
+        # no linking book in MOUL but fix it anyway
+        elif ((id == respPresentBook.id) and boolLinkerIsMe):
             global theBook
             
             # book is finished presenting - now link
-            bookcode = '<font size=10><img src="xDRCBookRubberStamp2*1#0.hsm" pos=125,120 blend=alpha><pb><img src="xLinkPanelKirelDefault*1#0.hsm" align=center link=0 blend=alpha>'
+            bookcode = '<font size=10><img src="xDRCBookRubberStamp2*1#0.hsm" pos=125,120 blend=alpha><pb><img src="xLinkPanelKirel*1#0.hsm" align=center link=0 blend=alpha>'
             
             theBook = ptBook(bookcode, self.key)
             theBook.setGUI("BkBook")
@@ -147,7 +152,7 @@ class philBookshelf(ptModifier):
                             PtDebugPrint("philBookshelf:Book: hit linking panel %s" % (event[2]))
                             theBook.hide()
                             #respShelveBook.run(self.key)
-                            self.IDisengageShelf()
+                            self.IDisengageShelf(boolLinkerIsMe)
                             respLinkOut.run(self.key)
                             
                     elif event[1] == PtBookEventTypes.kNotifyHide:
@@ -156,25 +161,27 @@ class philBookshelf(ptModifier):
                         respShelveBook.run(self.key)
     
 
-    def IDisengageShelf(self):
-        LocalAvatar.draw.enable()
-        #reeneable first person
-        cam = ptCamera()
-        cam.enableFirstPersonOverride()
-        # go back to the Hut Circle Cam
-        virtCam = ptCamera()
-        virtCam.save(HutCamera.sceneobject.getKey())
-        PtEnableMovementKeys()
+    def IDisengageShelf(self, boolLinkerIsMe = false):
+        print ('philBookshelf.IDisengageShelf(): me = %s' % boolLinkerIsMe)
         actBookshelfExit.disable()
-        PtGetControlEvents(false,self.key)
-
-        PtSendKIMessage(kEnableKIandBB,0)
-        respMoveShelf.run(self.key, state = "lower", fastforward = 1)
+        # fastforward removed because it disables netPropagate
+        respMoveShelf.run(self.key, state = "lower")
+        if boolLinkerIsMe:
+            LocalAvatar.draw.enable()
+            #reeneable first person
+            cam = ptCamera()
+            cam.enableFirstPersonOverride()
+            # go back to the Hut Circle Cam
+            virtCam = ptCamera()
+            virtCam.save(HutCamera.sceneobject.getKey())
+            PtEnableMovementKeys()
+            PtGetControlEvents(false,self.key)
+            PtSendKIMessage(kEnableKIandBB,0)
 
 
     def OnControlKeyEvent(self,controlKey,activeFlag):
         if controlKey == PlasmaControlKeys.kKeyExitMode or controlKey == PlasmaControlKeys.kKeyMoveBackward:
-            self.IDisengageShelf()
+            self.IDisengageShelf(true)
 
 
     def OnTimer(self, id):
