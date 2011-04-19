@@ -64,22 +64,8 @@ from xMarkerGameKIDisplay import * #Support to display user-created marker game 
 # personal age SDL helper
 from xPsnlVaultSDL import *
 
-kJalakMiniIconBtn = 1200
-kJalakRandomBtn = 1201
-kJalakExtremeBtn = 1202
-kJalakWallToggleBtn = 1203
-kJalakColumnsLowBtn = 1204
-kJalakColumnsMedBtn = 1205
-kJalakColumnsHighBtn = 1206
-kJalakRampBtn = 1207
-kJalakSphereBtn = 1208
-kJalakBigBoxBtn = 1209
-kJalakLilBoxBtn = 1210
-kJalakRectangleBtn = 1211
-kJalakDestroyBtn = 1212
-JalakBtnStates = [   str(kJalakRandomBtn),str(kJalakExtremeBtn),str(kJalakWallToggleBtn),str(kJalakColumnsLowBtn),\
-                str(kJalakColumnsMedBtn),str(kJalakColumnsHighBtn),str(kJalakRampBtn),str(kJalakSphereBtn),\
-                str(kJalakBigBoxBtn),str(kJalakLilBoxBtn),str(kJalakRectangleBtn),str(kJalakDestroyBtn)]
+# jalak constants
+from jlakConstants import *
 
 # define the attributes that will be entered in max
 KIBlackbar = ptAttribGUIDialog(1,"The Blackbar dialog")
@@ -680,15 +666,6 @@ gMarkerGottenNumber = 0
 
 #message waiting system globals:
 kMessageWait = xEnum.Enum("createMarker, changeMarkerName")
-
-# =====================================
-# Jalak GUI constants
-kSphere = "Sphere"
-kLilBox = "LilBox"
-kBigBox = "BigBox"
-kRamp = "Ramp"
-kRect = "Rect"
-kJalakBtnDelaySeconds = 0.4
 
 # Jalak GUI globals
 jlakGUIButtons = []
@@ -3357,30 +3334,7 @@ class xKI(ptModifier):
 
 
     def SendJalakBtnHit(self,btnID):
-        if btnID == kJalakRandomBtn:
-            self.SendNote('self.AutoColumns(%d)' % (3))
-        elif btnID == kJalakExtremeBtn:
-            self.SendNote('self.AutoColumns(%d)' % (4))
-        elif btnID == kJalakWallToggleBtn:
-            self.SendNote('self.ToggleWall()')
-        elif btnID == kJalakColumnsLowBtn:
-            self.SendNote('self.AutoColumns(%d)' % (0))
-        elif btnID == kJalakColumnsMedBtn:
-            self.SendNote('self.AutoColumns(%d)' % (1))
-        elif btnID == kJalakColumnsHighBtn:
-            self.SendNote('self.AutoColumns(%d)' % (2))
-        elif btnID == kJalakRampBtn:
-            self.SendNote('self.DropWidget("%s")' % (kRamp))
-        elif btnID == kJalakSphereBtn:
-            self.SendNote('self.DropWidget("%s")' % (kSphere))
-        elif btnID == kJalakBigBoxBtn:
-            self.SendNote('self.DropWidget("%s")' % (kBigBox))
-        elif btnID == kJalakLilBoxBtn:
-            self.SendNote('self.DropWidget("%s")' % (kLilBox))
-        elif btnID == kJalakRectangleBtn:
-            self.SendNote('self.DropWidget("%s")' % (kRect))
-        elif btnID == kJalakDestroyBtn:
-            self.SendNote('self.ResetWidgets()')
+        self.SendNote('%d' % (btnID))
 
 
     def SendNote(self,ExtraInfo):
@@ -5033,7 +4987,7 @@ class xKI(ptModifier):
                 return "D'ni-Ae'gura"
             
             if ageInfo.getAgeFilename() == "spyroom":
-                return "Old Spy Room"
+                return "D'ni-Ae'gura"
 
             if ageInfo.getAgeFilename() == "philRelto":
                 return "Phil's Relto"
@@ -5050,7 +5004,7 @@ class xKI(ptModifier):
                 return "The Writers' Pub"
 
             if ageInfo.getAgeFilename() == "Kveer":
-                return "K'veer"
+                return "D'ni-K'veer"
 
             if ageInfo.getAgeFilename() in kHideAgesHackList:
                 return "???"
@@ -5094,7 +5048,7 @@ class xKI(ptModifier):
         elif ageName == "EderTsogal":
             ageName = "Eder Tsogal"
         elif ageName == "spyroom":
-            ageName = ageName.replace("spyroom", "Old Spy Room")
+            ageName = ageName.replace("spyroom", "D'ni-Ae'gura")
         elif ageName == "philRelto":
             ageName = ageName.replace("philRelto", "Phil's Relto")
         elif ageName == "GuildPub-Cartographers":
@@ -5108,7 +5062,14 @@ class xKI(ptModifier):
         elif ageName == "GuildPub-Writers":
             ageName = ageName.replace("GuildPub-Writers", "The Writers' Pub")
         elif ageName == "Kveer":
-            ageName = ageName.replace("Kveer", "K'veer")
+            ageName = ageName.replace("Kveer", "D'ni-K'veer")
+        elif ageName == "Kirel" or ageName == "Neighborhood02":
+            ageName = "D'ni-Kirel"
+        elif ageName == "Shaft" or ageName == "Descent":
+            ageName = "D'ni-Tiwah"
+
+        if ageName.find("(null)") != -1:
+            ageName = ageName.replace("(null)", "").strip()
         #print "AgeName output as %s" % (ageName)
         return ageName
 
@@ -5145,7 +5106,7 @@ class xKI(ptModifier):
                 return 0
             if ageInfo.getAgeFilename() == "GreatZero":
                 return 0
-            if ageInfo.getAgeFilename() == "Shaft":
+            if ageInfo.getAgeFilename() == "Shaft" or ageInfo.getAgeFilename() == "Descent":
                 return 0
         except AttributeError:
             pass
@@ -5210,10 +5171,10 @@ class xKI(ptModifier):
             return "D'ni-Ashem'en"
         if ageName == "GreatZero":
             return "D'ni-Rezeero"
-        if ageName == "Shaft":
+        if ageName == "Shaft" or ageName == "Descent":
             return "D'ni-Tiwah"
         if ageName == "spyroom":
-            return "Old Spy Room"
+            return "D'ni-Ae'gura"
         if ageName == "philRelto":
             return "Phil's Relto"
         if ageName == "GuildPub-Cartographers":
@@ -5229,7 +5190,7 @@ class xKI(ptModifier):
         if ageName == "AhnonayCathedral":
             return "Ahnonay Cathedral"
         if ageName == "Kveer":
-            return "K'veer"
+            return "D'ni-K'veer"
         return ageName
 
     def IIsAgeMyNeighborhood(self,ageInfo):
