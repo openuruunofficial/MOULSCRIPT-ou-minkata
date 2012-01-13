@@ -855,7 +855,7 @@ class jlakField(ptResponder):
             else:
                 print "jlakField.ExecCode(): ERROR! Invalid btnID %d." % (btnID)
         except:
-            cmd = code.split(';')
+            cmd = code.split(';',1)
             if len(cmd) != 2:
                 print "jlakField.ExecCode(): ERROR! Malformed Command '%s'." % (code)
                 return
