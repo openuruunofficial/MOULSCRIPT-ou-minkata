@@ -772,12 +772,12 @@ def CMPplayerOnline(playerA,playerB):
             elPlayerA = elPlayerA.upcastToPlayerInfoNode()
             elPlayerB = elPlayerB.upcastToPlayerInfoNode()
             if elPlayerA.playerIsOnline() and elPlayerB.playerIsOnline():
-                return cmp(string.lower(elPlayerA.playerGetName()), string.lower(elPlayerB.playerGetName()))
+                return cmp(elPlayerA.playerGetName().lower(), elPlayerB.playerGetName().lower())
             if elPlayerA.playerIsOnline():
                 return -1
             if elPlayerB.playerIsOnline():
                 return 1
-            return cmp(string.lower(elPlayerA.playerGetName()), string.lower(elPlayerB.playerGetName()))
+            return cmp(elPlayerA.playerGetName().lower(), elPlayerB.playerGetName().lower())
     return 0
 
 def CMPNodeDate(nodeA,nodeB):
@@ -8729,7 +8729,7 @@ class xKI(ptModifier):
                 if isinstance(BKContentList[0],ptPlayer):
                     # sort the list of age players - up front
                     try:
-                        BKContentList.sort(lambda a, b: cmp(string.lower(a.getPlayerName()), string.lower(b.getPlayerName())))
+                        BKContentList.sort(lambda a, b: cmp(a.getPlayerName().lower(), b.getPlayerName().lower()))
                     except:
                         PtDebugPrint("xBigKI: Unable to sort age players but let's not break the list", level=kErrorLevel)
 
