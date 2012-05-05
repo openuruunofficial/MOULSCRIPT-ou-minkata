@@ -55,7 +55,6 @@ from PlasmaNetConstants import *
 import PlasmaControlKeys
 import xLinkingBookDefs
 from xPsnlVaultSDL import *
-import string
 
 import xVisitorUtils #For non-subscription based players
 
@@ -386,11 +385,11 @@ class psnlBookshelf(ptModifier):
                         
                     if event[1].split(",")[0] == "ILink": # parse the spawn point info off the entire note (which comes through as "ILink, SpawnPointName,SpawnPointTitle")
                         
-                        LinkerID = string.atoi(event[1].split(",")[3])
-                        ##print "LinkerID = ", LinkerID
+                        LinkerID = event[3]
+                        #~ print "LinkerID = ", LinkerID
                         avatar = PtGetLocalAvatar()   
                         myID = PtGetClientIDFromAvatarKey(avatar.getKey())
-                        ##print "myID = ", myID
+                        #~ print "myID = ", myID
                         self.IShelveBook()
                         if LinkerID == myID:
                             
