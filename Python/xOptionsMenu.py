@@ -1729,7 +1729,7 @@ class xOptionsMenu(ptModifier):
 
         vidResList = []
         for i in PtGetSupportedDisplayModes():
-            if i[0] < 800 or i[1] < 600:
+            if i[0] < 800 or i[1] < 576: # the game is designed for 800x600 minimum, but let's accept 1024x576 as "close enough"
                 continue
             if windowed and (i[0] >= PtGetDesktopWidth() and i[1] >= PtGetDesktopHeight()):
                 continue
