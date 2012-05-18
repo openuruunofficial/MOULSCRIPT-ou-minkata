@@ -324,8 +324,6 @@ defaultControlCodeBinds = { PlasmaControlKeys.kKeyMoveForward : ( "UpArrow","(un
 
 defaultControlCodeBindsOrdered = [  PlasmaControlKeys.kKeyMoveForward, PlasmaControlKeys.kKeyMoveBackward, PlasmaControlKeys.kKeyRotateLeft, PlasmaControlKeys.kKeyRotateRight, PlasmaControlKeys.kKeyJump, PlasmaControlKeys.kKeyStrafeLeft, PlasmaControlKeys.kKeyStrafeRight, PlasmaControlKeys.kKeyExitMode, PlasmaControlKeys.kKeySetFirstPersonMode, "Game.KIOpenYeeshaBook", "Game.KIHelp", "Game.KIOpenKI", "Game.KITakePicture", "Game.KICreateJournal", PlasmaControlKeys.kKeyPushToTalk, "Game.EnterChatMode", "Game.KICreateMarkerFolder", "Game.KICreateMarker"]
 
-kVideoResolutions = ["800x600", "1024x768", "1280x960", "1280x1024", "1600x1200"]
-kVideoExtraResolutions = ["1152x864", "1280x720", "1280x768", "1280x800", "1280x854", "1440x900", "1600x900", "1680x1050", "1920x1080", "1920x1200", "2560x1600"]
 kVideoQuality = ["Low", "Medium", "High", "Ultra"]
 kVideoTextureQuality = ["Low", "Medium", "High"]
 kVideoAntiAliasing = {"0": 0, "2": 1, "4": 2, "6": 3}
@@ -1247,11 +1245,6 @@ class xOptionsMenu(ptModifier):
                     vidResList = self.GetVideoResList()
                     resSlider = videoSlider.getValue() * (len(vidResList) - 1)
                     curSelection = int(round(resSlider))
-                    #print "Read: " + str(videoSlider.getValue())
-                    #print "Based: " + str(videoSlider.getValue() * (len(vidResList) - 1))
-                    #print "Round: " + str(round(resSlider))
-                    #print "Index: " + str(curSelection)
-                    #print "Set: " + str(float(curSelection) / (len(vidResList) - 1))
                     if len(vidResList) == 1:
                         videoSlider.setValue(0)
                         videoSlider.disable()
@@ -1261,19 +1254,8 @@ class xOptionsMenu(ptModifier):
                         ptGUIControlTextBox(GraphicsSettingsDlg.dialog.getControlFromTag(kVideoResTextHeaderTag)).setForeColor(ptColor(0.839, 0.785, 0.695, 1))
                     else:
                         control.setValue(float(curSelection) / (len(vidResList) - 1))
-                        if curText != vidResList[curSelection]:
-                            if vidResList[curSelection] in ["800x600", "1024x768", "1152x864", "1280x960", "1600x1200"]:
-                                videoText.setString(vidResList[curSelection] + " [4:3]")
-                            elif vidResList[curSelection] in ["1280x720", "1600x900"]:
-                                videoText.setString(vidResList[curSelection] + " [16:9]")
-                            elif vidResList[curSelection] in ["1280x800", "1440x900", "1680x1050", "1920x1200", "2560x1600"]:
-                                videoText.setString(vidResList[curSelection] + " [16:10]")
-                            elif vidResList[curSelection] in ["1280x854"]:
-                                videoText.setString(vidResList[curSelection] + " [3:2]")
-                            elif vidResList[curSelection] in ["1280x768"]:
-                                videoText.setString(vidResList[curSelection] + " [5:3]")
-                            elif vidResList[curSelection] in ["1280x1024"]:
-                                videoText.setString(vidResList[curSelection] + " [5:4]")
+                        newValue = vidResList[curSelection]
+                        self.SetVidResField(newValue)
 
                 elif tagID == kVideoQualitySliderTag or tagID == kVideoTextureQualitySliderTag:
                     self.restartWarn = 1
@@ -1281,6 +1263,7 @@ class xOptionsMenu(ptModifier):
                     control.setValue(int(curVal))
 
                 elif tagID == kVideoWindowedCheckTag:
+                    videoField = ptGUIControlKnob(GraphicsSettingsDlg.dialog.getControlFromTag(kVideoResSliderTag))
                     if not control.isChecked():
                         ptGUIControlKnob(GraphicsSettingsDlg.dialog.getControlFromTag(kVideoResSliderTag)).enable()
                         respDisableItems.run(self.key, state="enableRes")
@@ -1293,11 +1276,13 @@ class xOptionsMenu(ptModifier):
                         respDisableItems.run(self.key, state="disableGamma")
                         ptGUIControlKnob(GraphicsSettingsDlg.dialog.getControlFromTag(kGSDisplayGammaSlider)).disable()
                         ptGUIControlTextBox(GraphicsSettingsDlg.dialog.getControlFromTag(kGSDispGamaText)).setForeColor(ptColor(0.839, 0.785, 0.695, 1))
+                    
                     vidResList = self.GetVideoResList()
                     vidRes = ptGUIControlTextBox(GraphicsSettingsDlg.dialog.getControlFromTag(kVideoResTextTag))
-                    if not vidRes.getString() in vidResList:
+                    if not self.GetVidResField() in vidResList:
                         vidRes.setString("800x600 [4:3]")
-                    videoField = ptGUIControlKnob(GraphicsSettingsDlg.dialog.getControlFromTag(kVideoResSliderTag))
+                        videoField.setValue(0.0)
+                    
                     numRes = len(vidResList)
                     if numRes == 1:
                         videoField.setValue(0)
@@ -1308,8 +1293,8 @@ class xOptionsMenu(ptModifier):
                         ptGUIControlTextBox(GraphicsSettingsDlg.dialog.getControlFromTag(kVideoResTextHeaderTag)).setForeColor(ptColor(0.839, 0.785, 0.695, 1))
                     else:
                         for res in range(numRes):
-                            if vidRes.getString() == vidResList[res]:
-                                videoField.setValue( float(res) / (numRes - 1))
+                            if self.GetVidResField() == vidResList[res]:
+                                videoField.setValue(float(res) / float(numRes - 1))
                                 break
 
                 elif tagID == kVideoAntiAliasingSliderTag or tagID == kVideoFilteringSliderTag:
@@ -1543,7 +1528,6 @@ class xOptionsMenu(ptModifier):
         videoField.setChecked(defaults[9])
 
         vidRes =  str(defaults[0]) + "x" + str(defaults[1])
-        videoResField = ptGUIControlTextBox(GraphicsSettingsDlg.dialog.getControlFromTag(kVideoResTextTag))
         videoField = ptGUIControlKnob(GraphicsSettingsDlg.dialog.getControlFromTag(kVideoResSliderTag))
 
         vidResList = self.GetVideoResList()
@@ -1561,19 +1545,7 @@ class xOptionsMenu(ptModifier):
                     videoField.setValue( float(res) / (numRes - 1))
                 else:
                     videoField.setValue( 0 )
-
-        if vidRes in ["800x600", "1024x768", "1152x864", "1280x960", "1600x1200"]:
-            videoResField.setString(vidRes + " [4:3]")
-        elif vidRes in ["1280x720", "1600x900"]:
-            videoResField.setString(vidRes + " [16:9]")
-        elif vidRes in ["1280x800", "1440x900", "1680x1050", "1920x1200", "2560x1600"]:
-            videoResField.setString(vidRes + " [16:10]")
-        elif vidRes in ["1280x854"]:
-            videoResField.setString(vidRes + " [3:2]")
-        elif vidRes in ["1280x768"]:
-            videoResField.setString(vidRes + " [5:3]")
-        elif vidRes in ["1280x1024"]:
-            videoResField.setString(vidRes + " [5:4]")
+        self.SetVidResField(vidRes)
 
     def InitVideoControlsGUI(self):
         xIniDisplay.ReadIni()
@@ -1644,19 +1616,7 @@ class xOptionsMenu(ptModifier):
                     respDisableItems.run(self.key, state="disableRes")
                     videoResField.setForeColor(ptColor(0.839, 0.785, 0.695, 1))
                     ptGUIControlTextBox(GraphicsSettingsDlg.dialog.getControlFromTag(kVideoResTextHeaderTag)).setForeColor(ptColor(0.839, 0.785, 0.695, 1))
-
-        if vidRes in ["800x600", "1024x768", "1152x864", "1280x960", "1600x1200"]:
-            videoResField.setString(vidRes + " [4:3]")
-        elif vidRes in ["1280x720", "1600x900"]:
-            videoResField.setString(vidRes + " [16:9]")
-        elif vidRes in ["1280x800", "1440x900", "1680x1050", "1920x1200", "2560x1600"]:
-            videoResField.setString(vidRes + " [16:10]")
-        elif vidRes in ["1280x854"]:
-            videoResField.setString(vidRes + " [3:2]")
-        elif vidRes in ["1280x768"]:
-            videoResField.setString(vidRes + " [5:3]")
-        elif vidRes in ["1280x1024"]:
-            videoResField.setString(vidRes + " [5:4]")
+        self.SetVidResField(vidRes)
 
         gammaField = ptGUIControlKnob(GraphicsSettingsDlg.dialog.getControlFromTag(kGSDisplayGammaSlider))
         GammaVal = self.getChronicleVar("gamma")
@@ -1673,10 +1633,36 @@ class xOptionsMenu(ptModifier):
             else:
                 gammaField.setValue( float(GammaVal) )
 
+    def _AspectRatio(self, w, h):
+        """Returns the appropriate aspect ratio for the given resolution"""
+        ratios = ((5, 4), (4, 3), (3, 2), (16, 10), (5, 3), (16, 9), (16, 9.375),)
+        w = float(w) # comes in as string, want float (not int) for division
+        h = float(h)
+        for r in ratios:
+            # resolution is within 1 pixel wiggle room in any direction from the exact aspect ratio (needed to recognize 1280x854 as 3:2)
+            if (w+1)/(h-1) >= float(r[0])/float(r[1]) >= (w-1)/(h+1):
+                return " [%i:%i]" % (r[0], r[1])
+        return ""
+    
+    def GetVidResField(self):
+        videoResField = ptGUIControlTextBox(GraphicsSettingsDlg.dialog.getControlFromTag(kVideoResTextTag))
+        value = videoResField.getString().split(' ')
+        return value[0]
+    
+    def SetVidResField(self, value):
+        videoResField = ptGUIControlTextBox(GraphicsSettingsDlg.dialog.getControlFromTag(kVideoResTextTag))
+        w, h = value.split("x")
+        label = value + self._AspectRatio(w, h)
+        videoResField.setString(label)
+
     def WriteVideoControls(self, setMode = 0):
         videoField = ptGUIControlTextBox(GraphicsSettingsDlg.dialog.getControlFromTag(kVideoResTextTag))
         width, height = videoField.getString().split("x")
-        height, trash = height.split(" ")
+        try:
+            height, trash = height.split(" ")
+        except ValueError:
+            # there was no trash after height, so eat the exception
+            pass
         width = int(width)
         height = int(height)
 
@@ -1723,18 +1709,6 @@ class xOptionsMenu(ptModifier):
         gammaField = ptGUIControlKnob(GraphicsSettingsDlg.dialog.getControlFromTag(kGSDisplayGammaSlider))
         gamma = gammaField.getValue()
 
-        '''
-        print "width: " + str(width)
-        print "height: " + str(height)
-        print "colordepth: " + str(colordepth)
-        print "windowed: " + str(windowed)
-        print "tex_quality: " + str(tex_quality)
-        print "antialias: " + str(antialias)
-        print "aniso: " + str(aniso)
-        print "quality: " + str(quality)
-        print "shadows: " + str(shadows)
-        '''
-
         xIniDisplay.SetGraphicsOptions(width, height, colordepth, windowed, tex_quality, antialias, aniso, quality, shadows, vsyncstr, shadow_quality)
         xIniDisplay.WriteIni()
         self.setNewChronicleVar("gamma", gamma)
@@ -1754,30 +1728,13 @@ class xOptionsMenu(ptModifier):
         windowed = ptGUIControlCheckBox(GraphicsSettingsDlg.dialog.getControlFromTag(kVideoWindowedCheckTag)).isChecked()
 
         vidResList = []
-
-        possibleVidResList = copy.copy(kVideoResolutions)
-        possibleVidResList.extend(kVideoExtraResolutions)
-
-        if windowed:
-            # get current display mode
-            desktopWidth = PtGetDesktopWidth()
-            desktopHeight = PtGetDesktopHeight()
-
-            for res in possibleVidResList:
-                if int(res[:res.find("x")]) < desktopWidth and int(res[(res.find("x") + 1):]) < desktopHeight:
-                    vidResList.append(res)
-
-        else:
-            # get supported display resolutions
-            supportedResList = PtGetSupportedDisplayModes()
-
-            for res in supportedResList:
-                resStr = str(res[0]) + "x" + str(res[1])
-                if resStr in possibleVidResList:
-                    vidResList.append(resStr)
-
+        for i in PtGetSupportedDisplayModes():
+            if i[0] < 800 or i[1] < 576: # the game is designed for 800x600 minimum, but let's accept 1024x576 as "close enough"
+                continue
+            if windowed and (i[0] >= PtGetDesktopWidth() and i[1] >= PtGetDesktopHeight()):
+                continue
+            vidResList.append("%ix%i" % (i[0], i[1]))
         vidResList.sort(res_comp)
-
         return vidResList
 
     def WriteAudioControls(self):
