@@ -808,7 +808,7 @@ class xLinkingBookGUIPopup(ptModifier):
         PtDebugPrint("xLinkingBookGUIPopup: It's a Bahro Linking Tablet (BLT), so we get to do fun stuff now!")
         agePanel = TargetAge.value
         # share book image is on the "first" page while the linking panel is on the "second" page
-        if PtIsSinglePlayerMode() or OfferedBookMode or (agePanel in xLinkingBookDefs.CityBookLinks):
+        if PtIsSinglePlayerMode() or OfferedBookMode or (agePanel in xLinkingBookDefs.CityBookLinks) or (self.IGetAgeFilename() == "PelletBahroCave"):
             bookdef = '<font size=10>' + xLinkingBookDefs.BahroNoShare +'<pb>' + xLinkingBookDefs.TransLinkStart + linkingPanel + xLinkingBookDefs.LinkEnd
         else:
             bookdef = '<font size=10>' + xLinkingBookDefs.BahroShare +'<pb>' + xLinkingBookDefs.TransLinkStart + linkingPanel + xLinkingBookDefs.LinkEnd
