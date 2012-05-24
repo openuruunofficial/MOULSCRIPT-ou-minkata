@@ -196,7 +196,7 @@ else:
         "EderKemo":             ( 1, 1.0, 1.0, NoDRCStamp, BookStart1 + DRCStampHolder + ShareHolder + LinkStart + 'xLinkPanelGardenDefault' + LinkEnd + YeeshaStamp ),
         "EderTsogal":           ( 0, 1.0, 1.0, NoDRCStamp, BookStart1 + DRCStampHolder + NoShare + LinkStart + 'xLinkPaneltsoGarden' + LinkEnd ),
         "EderDelin":            ( 0, 1.0, 1.0, NoDRCStamp, BookStart1 + DRCStampHolder + NoShare + LinkStart + 'xLinkPanelEderDelinDefault' + LinkEnd ),
-        "BaronCityOffice":      ( 1, 1.0, 1.0, DRCStamp2+DRCPos1, BookStart1 + DRCStampHolder + ShareHolder + LinkStart + 'xLinkPanelBaronCityOffice' + LinkEnd + YeeshaStamp ),
+        "BaronCityOffice":      ( 0, 1.0, 1.0, DRCStamp2+DRCPos1, BookStart1 + DRCStampHolder + NoShare + LinkStart + 'xLinkPanelBaronCityOffice' + LinkEnd + YeeshaStamp ),
         "tldnUpperShroom":      ( 1, 1.0, 1.0, DRCStamp1+DRCPos2, BookStart1 + DRCStampHolder + ShareHolder + LinkStart + 'xLinkPanelUpperShroom' + LinkEnd + YeeshaStamp ),
         "Garrison":             ( 1, 1.0, 1.0, DRCStamp2+DRCPos3, BookStart1 + DRCStampHolder + ShareHolder + LinkStart + 'xLinkPanelGarrisonDefault' + LinkEnd + YeeshaStamp ),
         "GarrisonNoShare":      ( 0, 1.0, 1.0, DRCStamp2+DRCPos3, BookStart1 + DRCStampHolder + NoShare + LinkStart + 'xLinkPanelGarrisonDefault' + LinkEnd ),
