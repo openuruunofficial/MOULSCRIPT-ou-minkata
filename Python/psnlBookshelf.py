@@ -55,7 +55,6 @@ from PlasmaNetConstants import *
 import PlasmaControlKeys
 import xLinkingBookDefs
 from xPsnlVaultSDL import *
-import string
 
 import xVisitorUtils #For non-subscription based players
 
@@ -383,17 +382,11 @@ class psnlBookshelf(ptModifier):
                     if event[1] == "IShelveBook" and type(objBookPicked) != type(None):
                         self.IShelveBook()
                         
-                        
                     if event[1].split(",")[0] == "ILink": # parse the spawn point info off the entire note (which comes through as "ILink, SpawnPointName,SpawnPointTitle")
-                        
-                        LinkerID = string.atoi(event[1].split(",")[3])
-                        ##print "LinkerID = ", LinkerID
-                        avatar = PtGetLocalAvatar()   
-                        myID = PtGetClientIDFromAvatarKey(avatar.getKey())
-                        ##print "myID = ", myID
-                        self.IShelveBook()
-                        if LinkerID == myID:
+                        if event[3] < 0: #legacy check (if > 0 then it's from old code and, therefore, not ours)
+                            self.IShelveBook()
                             
+                            avatar = PtGetLocalAvatar()
                             #reenable First person before linking out
                             cam = ptCamera()
                             cam.enableFirstPersonOverride()
@@ -678,6 +671,9 @@ class psnlBookshelf(ptModifier):
                         return
                     
                     link = self.IGetLinkFromBook()
+                    # Do not use the age link node of a Hood child age for the city book clasp!
+                    if IsChildLink:
+                        link = self.GetOwnedAgeLink(ptAgeVault(), "city")
                     if type(link) == type(None):
                         return
                     if type(link) != type(ptVaultAgeLinkNode()) or link.getLocked():
@@ -755,6 +751,9 @@ class psnlBookshelf(ptModifier):
                     self.IUpdateLinks()
                 return
             link = self.IGetLinkFromBook()
+            # Do not use the age link node of a Hood child age for the city book clasp!
+            if IsChildLink:
+                link = self.GetOwnedAgeLink(ptAgeVault(), "city")
             if type(link) == type(None):
                 return
                 
@@ -869,6 +868,9 @@ class psnlBookshelf(ptModifier):
                         return
                         
                     link = self.IGetLinkFromBook()
+                    # Do not use the age link node of a Hood child age for the city book clasp!
+                    if IsChildLink:
+                        link = self.GetOwnedAgeLink(ptAgeVault(), "city")
                     if type(link) == type(None):
                         return
                     lockName = objLockPicked.getName()
@@ -1141,7 +1143,10 @@ class psnlBookshelf(ptModifier):
         "returns link element associated with global objBookPicked or None"
         global CityBookAges
         global IsChildLink
-        
+
+        # better set this to 0 by default now that we're using it to correct the city book clasp
+        IsChildLink = 0
+
         ageName = self.IGetAgeFromBook()
         print "psnlBookshelf.IGetLinkFromBook(): before city lookup, ageName = ",ageName
 
@@ -1175,7 +1180,7 @@ class psnlBookshelf(ptModifier):
                         continue
                     else:
                         # found our link
-                        print "psnlBookshelf.IGetLinkFromBook():\tfound Child link", info.getAgeFilename()
+                        print "psnlBookshelf.IGetLinkFromBook():\tfound Child link ", info.getAgeFilename()
                         IsChildLink = 1
                         return link
 
@@ -1244,14 +1249,14 @@ class psnlBookshelf(ptModifier):
 
             # show as locked if both are locked, or one is locked and the other doesn't exist
             if ( type(citylinklocked) == type(None) or citylinklocked) and ( type(bcolinklocked) == type(None) or bcolinklocked):
-                print "psnlBookshelf.IUpdateLocksAndTrays():\tsetting clasp to locked: ",lockName
+                print "psnlBookshelf.IUpdateLocksAndTrays():\tsetting city book clasp to locked: ",lockName
                 for rkey,rvalue in respCloseLock.byObject.items():
                     parent = rvalue.getParentKey()
                     if parent:
                         if lockName == parent.getName():
                             respCloseLock.run(self.key,objectName=rkey,fastforward=1)
             else:
-                print "psnlBookshelf.IUpdateLocksAndTrays():\tsetting clasp to unlocked: ",lockName
+                print "psnlBookshelf.IUpdateLocksAndTrays():\tsetting city book clasp to unlocked: ",lockName
                 for rkey,rvalue in respOpenLock.byObject.items():
                     parent = rvalue.getParentKey()
                     if parent:

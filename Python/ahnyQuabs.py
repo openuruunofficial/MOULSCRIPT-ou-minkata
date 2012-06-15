@@ -275,6 +275,11 @@ class ahnyQuabs(ptModifier):
         if game == None:
             return # no game connection established
 
+        ## Fix for the fearless Quabs bug
+        if len(quabVarList) < len(quabBrainList):
+            PtDebugPrint('ahnyQuabs.OnUpdate(): quabVarList not ready! length = %d but should be %d' % (len(quabVarList), len(quabBrainList)), level=kErrorLevel)
+            return # abort to avoid a KeyError which could break the AI
+
         for brain in quabBrainList:
             if brain == None:
                 continue

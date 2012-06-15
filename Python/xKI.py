@@ -772,12 +772,12 @@ def CMPplayerOnline(playerA,playerB):
             elPlayerA = elPlayerA.upcastToPlayerInfoNode()
             elPlayerB = elPlayerB.upcastToPlayerInfoNode()
             if elPlayerA.playerIsOnline() and elPlayerB.playerIsOnline():
-                return cmp(elPlayerA.playerGetName(),elPlayerB.playerGetName())
+                return cmp(elPlayerA.playerGetName().lower(), elPlayerB.playerGetName().lower())
             if elPlayerA.playerIsOnline():
                 return -1
             if elPlayerB.playerIsOnline():
                 return 1
-            return cmp(elPlayerA.playerGetName(),elPlayerB.playerGetName())
+            return cmp(elPlayerA.playerGetName().lower(), elPlayerB.playerGetName().lower())
     return 0
 
 def CMPNodeDate(nodeA,nodeB):
@@ -2155,7 +2155,8 @@ class xKI(ptModifier):
                     if BKRightSideMode == kBKListMode:
                         BKContentListTopLine += kContentListScrollSize;
                         self.IBigKIRefreshContentListDisplay()
-                elif bkID >= kBKIToFolderButton01 and bkID <= kBKIToFolderButtonLast:
+                #elif bkID >= kBKIToFolderButton01 and bkID <= kBKIToFolderButtonLast:
+                elif bkID >= kBKIToIncomingButton and bkID <= kBKIToFolderButtonLast:
                     # determine which folder
                     tofolderNum = bkID-kBKIToFolderButton01+BKFolderTopLine+1
                     # if they are in an expanded mode, then they can move the element to another folder
@@ -8727,6 +8728,12 @@ class xKI(ptModifier):
             if len(BKContentList) > 0:
                 # if this is a ptPlayer
                 if isinstance(BKContentList[0],ptPlayer):
+                    # sort the list of age players - up front
+                    try:
+                        BKContentList.sort(lambda a, b: cmp(a.getPlayerName().lower(), b.getPlayerName().lower()))
+                    except:
+                        PtDebugPrint("xBigKI: Unable to sort age players but let's not break the list", level=kErrorLevel)
+
                     for idx in range(len(BKContentList)):
                         player = BKContentList[idx]
                         if isinstance(player,ptPlayer):
