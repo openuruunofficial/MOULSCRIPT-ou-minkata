@@ -119,7 +119,6 @@ class nb01UpdateHoodInfoImager(ptResponder):
             else:
                 currenttime = time.gmtime(PtGetDniTime())
                 currenttimestr = time.strftime("%m/%d/%Y %I:%M %p", currenttime)
-                playername = PtGetLocalPlayer().getPlayerName()
                 thetext = currenttimestr + (" " * (30 - len(currenttimestr))) + playername
                 
                 playerlist = ptVaultTextNoteNode(0)
@@ -218,8 +217,7 @@ class nb01UpdateHoodInfoImager(ptResponder):
                 pelletscores.setText(newText)
                 pelletscores.forceSave()
             else:
-                playername = PtGetLocalPlayer().getPlayerName()
-                thetext = str(playername) + "\t" + str(pelletscore) + "\n"
+                thetext = newplayername + "\t" + str(pelletscore) + "\n"
                 pelletscores = ptVaultTextNoteNode(0)
                 pelletscores.setTitle("Pellet Scores")
                 pelletscores.setText(thetext)
