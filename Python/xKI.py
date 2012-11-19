@@ -6918,6 +6918,8 @@ class xKI(ptModifier):
                 chatMessageFormatted = " " + unicode(message)
         
         chatarea = ptGUIControlMultiLineEdit(mKIdialog.getControlFromTag(kChatDisplayArea))
+        savedPosition = chatarea.getScrollPosition()
+        wasAtEnd = chatarea.isAtEnd()
         chatarea.moveCursor(PtGUIMultiLineDirection.kBufferEnd)
         chatarea.insertStringW(U"\n")
         chatarea.insertColor(headerColor)
@@ -6929,6 +6931,11 @@ class xKI(ptModifier):
         #Added unicode support here!
         chatarea.insertStringW(chatMessageFormatted)
         chatarea.moveCursor(PtGUIMultiLineDirection.kBufferEnd)
+
+        # Scroll the chat by the number of new lines.
+        if not wasAtEnd:
+            chatarea.setScrollPosition(savedPosition)
+
         # see if we're logging
         if type(ChatLogFile) != type(None) and ChatLogFile.isOpen():
             ChatLogFile.write(chatHeaderFormatted[0:]+chatMessageFormatted)

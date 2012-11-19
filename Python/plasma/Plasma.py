@@ -4119,6 +4119,10 @@ class ptGUIControlMultiLineEdit(ptGUIControl):
         """Returns a ptGUIDialog of the dialog that owns this GUI control"""
         pass
 
+    def getScrollPosition(self):
+        """Returns what line is the top line."""
+        pass
+
     def getSelectColor(self):
         """Returns the selection color"""
         pass
@@ -4162,6 +4166,10 @@ class ptGUIControlMultiLineEdit(ptGUIControl):
 
     def insertStyle(self,style):
         """Inserts an encoded font style at the current cursor position."""
+        pass
+
+    def isAtEnd(self):
+        """Returns true if the end of the buffer has been reached."""
         pass
 
     def isEnabled(self):
