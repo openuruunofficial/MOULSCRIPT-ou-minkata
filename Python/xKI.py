@@ -6932,10 +6932,6 @@ class xKI(ptModifier):
         chatarea.insertStringW(chatMessageFormatted)
         chatarea.moveCursor(PtGUIMultiLineDirection.kBufferEnd)
 
-        # Scroll the chat by the number of new lines.
-        if not wasAtEnd:
-            chatarea.setScrollPosition(savedPosition)
-
         # see if we're logging
         if type(ChatLogFile) != type(None) and ChatLogFile.isOpen():
             ChatLogFile.write(chatHeaderFormatted[0:]+chatMessageFormatted)
@@ -6945,8 +6941,16 @@ class xKI(ptModifier):
             while chatarea.getBufferSize() > kMaxChatSize and chatarea.getBufferSize() > 0:
                 PtDebugPrint("xKImini: max chat buffer size reached. Removing top line", level=kDebugDumpLevel)
                 chatarea.deleteLinesFromTop(1)
+                if savedPosition > 0:
+                    # this is only accurate if the deleted line only occupied one line in the control (wasn't soft-wrapped), but that tends to be the usual case
+                    savedPosition -= 1
 
             #chatarea.moveCursor(PtGUIMultiLineDirection.kBufferEnd)
+
+        if not wasAtEnd:
+            # scroll back to where we were
+            chatarea.setScrollPosition(savedPosition)
+
         # if this is the micro version then duplicate in miniKIs so its there when they switch
         if theKILevel == kMicroKI:
             chatarea2 = ptGUIControlMultiLineEdit(KIMini.dialog.getControlFromTag(kChatDisplayArea))
