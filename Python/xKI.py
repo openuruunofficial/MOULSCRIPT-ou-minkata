@@ -146,6 +146,7 @@ KILightObjectName = "RTOmniKILight"
 AgeName = ""
 JalakGUIState = 0
 kHideAgesHackList = ["BahroCave","PelletBahroCave","Pellet Cave","LiveBahroCave","LiveBahroCaves"]
+incomingChatFlashState = 0
 
 
 #======Phased globals
@@ -171,6 +172,7 @@ kMarkerGameTimer=5
 kDumpLogsTimer=6
 kLightStopID=7
 kJalakBtnDelayTimer=8
+kIncomingChatFlashTimer=9
 
 #===== KI limits
 kMaxPictures = 15
@@ -4214,6 +4216,7 @@ class xKI(ptModifier):
         global BKFolderSelected
         global BKFolderTopLine
         global WeAreTakingAPicture
+        global incomingChatFlashState
         #PtDebugPrint("xKI:OnTimer id=%d  FadeMode=%d" % (id,FadeMode) )
         if id == kFadeTimer:
             if PtIsSinglePlayerMode():
@@ -4280,6 +4283,21 @@ class xKI(ptModifier):
             self.DoKILight(0,0)
         elif id == kJalakBtnDelayTimer:
             self.SetJalakGUIButtons(1)
+        elif id == kIncomingChatFlashTimer:
+            if theKILevel < kNormalKI:
+                mKIdialog = KIMicro.dialog
+            else:
+                mKIdialog = KIMini.dialog
+            if incomingChatFlashState > 0:
+                btn = ptGUIControlButton(mKIdialog.getControlFromTag(kminiChatScrollDown))
+                if incomingChatFlashState & 1:
+                    btn.hide()
+                else:
+                    btn.show()
+                incomingChatFlashState -= 1
+                PtAtTimeCallback(self.key, 0.15, kIncomingChatFlashTimer)
+            else:
+                mKIdialog.refreshAllControls()
 
 
     def OnScreenCaptureDone(self,image):
@@ -6780,6 +6798,7 @@ class xKI(ptModifier):
         global LastPrivatePlayerID
         global ChatLogFile
         global kInternalDev
+        global incomingChatFlashState
         if PtIsSinglePlayerMode():
             return
         
@@ -6950,6 +6969,9 @@ class xKI(ptModifier):
         if not wasAtEnd:
             # scroll back to where we were
             chatarea.setScrollPosition(savedPosition)
+            # flash the down arrow to indicate that new chat has come in
+            incomingChatFlashState = 3
+            PtAtTimeCallback(self.key, 0.0, kIncomingChatFlashTimer)
 
         # if this is the micro version then duplicate in miniKIs so its there when they switch
         if theKILevel == kMicroKI:
