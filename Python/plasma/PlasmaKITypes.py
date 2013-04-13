@@ -107,6 +107,7 @@ kStartKIAlert = 59      # start the KI alert
 kUpdatePelletScore = 60 # Updates the pellet score
 kFriendInviteSent = 61  # Result of friend invite received
 kRegisterImager = 62    # Imagers send to register themselves with the KI
+kBigKIRefreshFolders = 63 # Refresh BigKI folders including full rebuild of age journal folders list
 
 # kUpgradeKILevel and kDowngradeKILevel levels
 kNanoKI=0
