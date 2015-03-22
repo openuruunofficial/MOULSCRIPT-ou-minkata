@@ -177,20 +177,20 @@ def MeChat(params=None):
     PtSendKIMessage(kKIChatStatusMsg, ('%s %s' % (PtGetLocalPlayer().getPlayerName(), params)))
 
 def DeleteFolder(params=None):
-    if (params == None):
+    if params is None:
         return 
     agename = params
-    if (agename == 'Hidden'):
+    if agename == 'Hidden':
         return 
     master_agefolder = ptVault().getAgeJournalsFolder()
-    if (type(master_agefolder) != type(None)):
+    if master_agefolder is not None:
         agefolderRefs = master_agefolder.getChildNodeRefList()
         for agefolderRef in agefolderRefs:
             agefolder = agefolderRef.getChild()
             agefolder = agefolder.upcastToFolderNode()
-            if (type(agefolder) != type(None)):
+            if agefolder is not None:
                 agefoldername = agefolder.folderGetName()
-                if (agefoldername == agename):
+                if agefoldername == agename:
                     if agefolder.getChildNodeCount():
                         PtSendKIMessage(kKILocalChatErrorMsg, ('KI folder %s NOT deleted because it is not empty!' % agefoldername))
                         return 
