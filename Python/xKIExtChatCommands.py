@@ -60,7 +60,8 @@ xChatExtendedChat = {
     Plasma.PtGetLocalizedString("KI.Commands.Uninvite"):    xInvite.DeleteInvitation,
     Plasma.PtGetLocalizedString("KI.Commands.Accept"):      xInvite.AcceptInvitation,
     Plasma.PtGetLocalizedString("KI.Commands.ShowInvites"): xInvite.ShowInvitations,
-    Plasma.PtGetLocalizedString("KI.Commands.Me"):          xInvite.MeChat
+    Plasma.PtGetLocalizedString("KI.Commands.Me"):          xInvite.MeChat,
+    "deletefolder":                                         xInvite.DeleteFolder
 }
 
 # enter new emote commands in the dictionary below

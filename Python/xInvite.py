@@ -175,3 +175,29 @@ def MeChat(params=None):
         print 'xChatExtend:MeCmd: If you have nothing to say, why say anything at all?'
         return 
     PtSendKIMessage(kKIChatStatusMsg, ('%s %s' % (PtGetLocalPlayer().getPlayerName(), params)))
+
+def DeleteFolder(params=None):
+    if params is None:
+        return 
+    agename = params
+    if agename == 'Hidden':
+        return 
+    master_agefolder = ptVault().getAgeJournalsFolder()
+    if master_agefolder is not None:
+        agefolderRefs = master_agefolder.getChildNodeRefList()
+        for agefolderRef in agefolderRefs:
+            agefolder = agefolderRef.getChild()
+            agefolder = agefolder.upcastToFolderNode()
+            if agefolder is not None:
+                agefoldername = agefolder.folderGetName()
+                if agefoldername == agename:
+                    if agefolder.getChildNodeCount():
+                        PtSendKIMessage(kKILocalChatErrorMsg, ('KI folder %s NOT deleted because it is not empty!' % agefoldername))
+                        return 
+                    master_agefolder.removeNode(agefolder)
+                    # the folder is now gone, but the KI still displays it
+                    # even running IBigKIRefreshFolders won't remove it from the list
+                    # so we'll use a brand new KI message to take care of this
+                    PtSendKIMessage(kBigKIRefreshFolders, 0)
+                    PtSendKIMessage(kKILocalChatStatusMsg, ('KI folder %s deleted' % agefoldername))
+                    break

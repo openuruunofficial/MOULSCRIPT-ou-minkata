@@ -3862,6 +3862,17 @@ class xKI(ptModifier):
         elif command == kRegisterImager:
             self.ImagerMap[value[0]] = value[1]
 
+        elif command == kBigKIRefreshFolders:
+            if theKILevel >= kNormalKI:
+                # if the big KI is showing the list we are trying to refresh it will fail, so close it!
+                if BigKI.dialog.isEnabled():
+                    self.IBigKIHideBigKI()
+                # clear dictionary and list for a full refresh
+                BKJournalFolderDict.clear()
+                del BKJournalListOrder[:]
+                # now this will rebuild the folders properly
+                self.IBigKIRefreshFolders()
+
 
     def OnGameCliMsg(self, msg):
         global MFdialogMode
