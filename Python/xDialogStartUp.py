@@ -155,6 +155,9 @@ k6MaleID            = 606
 k6FemaleID          = 607
 k6PlayTxtID         = 608
 
+#----Timers
+kShowDialog4cTimer  = 1
+
 #====================================
 # Globals
 gIsExplorer         = 0
@@ -163,6 +166,7 @@ gSelectedSlot       = 0
 gClickedWrongSlot   = 0
 gBlueColor          = ptColor(0.414, 0.449, 0.617, 1.0)
 gTanColor           = ptColor(0.500, 0.449, 0.375, 1.0)
+gRedColor           = ptColor(0.600, 0.250, 0.200, 1.0)
 gExp_HotSpot        = [k4bPlayer01,k4bPlayer02,k4bPlayer03,k4bPlayer04,k4bPlayer05,k4bPlayer06]
 gVis_HotSpot        = [k4aPlayer01,k4aPlayer02,k4aPlayer03,k4aPlayer04,k4aPlayer05,k4aPlayer06]
 gExp_TxtBox         = [k4bPlayerTxt01,k4bPlayerTxt02,k4bPlayerTxt03,k4bPlayerTxt04,k4bPlayerTxt05,k4bPlayerTxt06]
@@ -171,6 +175,7 @@ gExp_HiLite         = [resp4bPlayer01,resp4bPlayer02,resp4bPlayer03,resp4bPlayer
 gVis_HiLite         = [resp4aPlayer01,resp4aPlayer02,resp4aPlayer03,resp4aPlayer04,resp4aPlayer05,resp4aPlayer06]
 gMinusExplorer      = 203
 gMinusVisitor       = 103
+gDiag4cRepeat       = False
 
 WebLaunchCmd = None
 
@@ -244,6 +249,7 @@ class xDialogStartUp(ptResponder):
         global gMinusExplorer
         global gMinusVisitor
         global gClickedWrongSlot
+        global gDiag4cRepeat
 
         #print "xDialogStartUp: GUI Notify id=%d, event=%d control=" % (id,event),control
         if control:
@@ -265,10 +271,12 @@ class xDialogStartUp(ptResponder):
                     print gSelectedSlot
                     print type(gSelectedSlot)
                     if gSelectedSlot:
-                        deleteString = U"Would you like to delete the VISITOR " + unicode(gPlayerList[gSelectedSlot-gMinusVisitor][0]) + U"?"
-                        ptGUIControlTextBox(GUIDiag4c.dialog.getControlFromTag(k4cStaticID)).setStringW(deleteString)
+                        box = ptGUIControlTextBox(GUIDiag4c.dialog.getControlFromTag(k4cStaticID))
+                        box.setForeColor(gTanColor)
+                        box.setStringW(U"Would you like to DELETE the visitor %s?" % gPlayerList[gSelectedSlot-gMinusVisitor][0])
                         self.PlayerListNotify(GUIDiag4a, gVis_HotSpot, 0)
                         PtShowDialog("GUIDialog04c")
+                        gDiag4cRepeat = True
                     ## Or Else?? ##
 
                 elif  tagID == k4aPlayer01: ## Click Event ##
@@ -308,10 +316,12 @@ class xDialogStartUp(ptResponder):
 
                 elif  tagID == k4bDeleteID: ## Delete Explorer ##
                     if gSelectedSlot:
-                        deleteString = U"Would you like to delete the EXPLORER " + unicode(gPlayerList[gSelectedSlot-gMinusExplorer][0]) + U"?"
-                        ptGUIControlTextBox(GUIDiag4c.dialog.getControlFromTag(k4cStaticID)).setStringW(deleteString)
+                        box = ptGUIControlTextBox(GUIDiag4c.dialog.getControlFromTag(k4cStaticID))
+                        box.setForeColor(gTanColor)
+                        box.setStringW(U"Would you like to DELETE the explorer %s?" % gPlayerList[gSelectedSlot-gMinusExplorer][0])
                         self.PlayerListNotify(GUIDiag4b, gExp_HotSpot, 0)
                         PtShowDialog("GUIDialog04c")
+                        gDiag4cRepeat = True
                     ## Or Else?? ##
 
                 elif  tagID == k4bPlayer01: ## Click Event ##
@@ -337,6 +347,21 @@ class xDialogStartUp(ptResponder):
         elif id == GUIDiag4c.id:
             if event == kAction or event == kValueChanged:
                 if  tagID == k4cYesID: ## Confirm Delete ##
+                    # second chance for those who pressed DELETE instead of QUIT by mistake
+                    if gDiag4cRepeat:
+                        PtHideDialog("GUIDialog04c")
+                        gDiag4cRepeat = False
+                        box = ptGUIControlTextBox(GUIDiag4c.dialog.getControlFromTag(k4cStaticID))
+                        # set color of this dialog to red
+                        box.setForeColor(gRedColor)
+                        box.setStringW(U"WARNING: This action is irreversible! Are you sure you want to DELETE the %s %s?"
+                            % (gIsExplorer and (U"explorer", gPlayerList[gSelectedSlot-gMinusExplorer][0])
+                                            or (U"visitor",  gPlayerList[gSelectedSlot-gMinusVisitor][0])))
+                        # Need to add delay to briefly show the player selection dialog in between, otherwise you cannot
+                        # tell that it is a new dialog. It would look like a subtle change of text in the current dialog.
+                        PtAtTimeCallback(self.key, .2, kShowDialog4cTimer)
+                        return
+
                     playerID = 0
                     if gIsExplorer:
                         playerID = gPlayerList[gSelectedSlot-gMinusExplorer][1]
@@ -345,16 +370,18 @@ class xDialogStartUp(ptResponder):
                     PtDeletePlayer(playerID)
 
                 elif  tagID == k4cNoID: ## Cancel Delete ##
-                    if not (gSelectedSlot == k4bPlayer03) or not (gSelectedSlot == k4aPlayer03):
-                        if gIsExplorer:
-                            self.ToggleColor(GUIDiag4b, k4bPlayer03)
-                        else:
-                            self.ToggleColor(GUIDiag4a, k4aPlayer03)
-                    PtHideDialog("GUIDialog04c")
+                    # re-initialize the darn thing or we'll end up with horribly broken hotspots and hilites
                     if gIsExplorer:
-                        self.PlayerListNotify(GUIDiag4b, gExp_HotSpot, 1)
+                        self.SelectSlot(GUIDiag4b, 0)
+                        self.InitPlayerList(GUIDiag4b, gExp_HotSpot, gExp_TxtBox, gExp_HiLite)
+                        self.ToggleColor(GUIDiag4b, k4bPlayer03)
                     else:
-                        self.PlayerListNotify(GUIDiag4a, gVis_HotSpot, 1)
+                        self.SelectSlot(GUIDiag4a, 0)
+                        self.InitPlayerList(GUIDiag4a, gVis_HotSpot, gVis_TxtBox, gVis_HiLite)
+                        self.ToggleColor(GUIDiag4a, k4aPlayer03)
+
+                    PtHideDialog("GUIDialog04c")
+                    gDiag4cRepeat = False
 
         #################################
         ##         Not Needed          ##
@@ -492,6 +519,10 @@ class xDialogStartUp(ptResponder):
                 elif  tagID == k6FemaleID: ## Gender Female ##
                     if ptGUIControlCheckBox(GUIDiag6.dialog.getControlFromTag(k6MaleID)).isChecked():
                         ptGUIControlCheckBox(GUIDiag6.dialog.getControlFromTag(k6MaleID)).setChecked(0)
+
+    def OnTimer(self, id):
+        if id == kShowDialog4cTimer:
+            PtShowDialog("GUIDialog04c")
 
     ###########################
     def OnAccountUpdate(self, opType, result, playerInt):
