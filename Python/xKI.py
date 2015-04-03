@@ -56,6 +56,7 @@ MinorVersionNumber = 52
 from Plasma import *
 from PlasmaTypes import *
 from PlasmaKITypes import *
+from PlasmaConstants import *
 from PlasmaVaultConstants import *
 from PlasmaNetConstants import *
 
@@ -1502,6 +1503,16 @@ class xKI(ptModifier):
         KIBlackbar.dialog.hide()
         BigKI.dialog.hide()
         self.IEnterChatMode(0)
+
+        # Remove unneeded kFontShadowed flags (as long as we can't do that directly in the PRPs)
+        for dialogAttr in (BigKI, KIListModeDialog, KIJournalExpanded, KIPictureExpanded, KIPlayerExpanded, KIAgeOwnerExpanded, KISettings, KIMarkerFolderExpanded, KICreateMarkerGameGUI):
+            for i in xrange(dialogAttr.dialog.getNumControls()):
+                f = ptGUIControl(dialogAttr.dialog.getControlFromIndex(i))
+                # call this on all controls, even those that use the color scheme of the
+                # dialog and would already report the flag cleared after the first one,
+                # as they still need the setFontFlags call to refresh themselves
+                f.setFontFlags(f.getFontFlags() & ~int(PtFontFlags.kFontShadowed))
+
         if theKILevel == kNanoKI:
             PtDebugPrint("Its a nanoKI",level=kDebugDumpLevel)
             # show the microBlackbar
