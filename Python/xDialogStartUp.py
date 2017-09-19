@@ -176,6 +176,7 @@ gVis_HiLite         = [resp4aPlayer01,resp4aPlayer02,resp4aPlayer03,resp4aPlayer
 gMinusExplorer      = 203
 gMinusVisitor       = 103
 gDiag4cRepeat       = False
+gSavedSelectedSlot  = -1
 
 WebLaunchCmd = None
 
@@ -250,6 +251,7 @@ class xDialogStartUp(ptResponder):
         global gMinusVisitor
         global gClickedWrongSlot
         global gDiag4cRepeat
+        global gSavedSelectedSlot
 
         #print "xDialogStartUp: GUI Notify id=%d, event=%d control=" % (id,event),control
         if control:
@@ -273,7 +275,9 @@ class xDialogStartUp(ptResponder):
                     if gSelectedSlot:
                         box = ptGUIControlTextBox(GUIDiag4c.dialog.getControlFromTag(k4cStaticID))
                         box.setForeColor(gTanColor)
-                        box.setStringW(U"Would you like to DELETE the visitor %s?" % gPlayerList[gSelectedSlot-gMinusVisitor][0])
+                        # save the avatar they selected so a double clicker doesn't try to change it
+                        gSavedSelectedSlot = gSelectedSlot-gMinusVisitor
+                        box.setStringW(U"Would you like to DELETE the visitor %s?" % gPlayerList[gSavedSelectedSlot][0])
                         self.PlayerListNotify(GUIDiag4a, gVis_HotSpot, 0)
                         PtShowDialog("GUIDialog04c")
                         gDiag4cRepeat = True
@@ -318,6 +322,8 @@ class xDialogStartUp(ptResponder):
                     if gSelectedSlot:
                         box = ptGUIControlTextBox(GUIDiag4c.dialog.getControlFromTag(k4cStaticID))
                         box.setForeColor(gTanColor)
+                        # save the avatar they selected so a double clicker doesn't try to change it
+                        gSavedSelectedSlot = gSelectedSlot-gMinusExplorer
                         box.setStringW(U"Would you like to DELETE the explorer %s?" % gPlayerList[gSelectedSlot-gMinusExplorer][0])
                         self.PlayerListNotify(GUIDiag4b, gExp_HotSpot, 0)
                         PtShowDialog("GUIDialog04c")
@@ -348,26 +354,32 @@ class xDialogStartUp(ptResponder):
             if event == kAction or event == kValueChanged:
                 if  tagID == k4cYesID: ## Confirm Delete ##
                     # second chance for those who pressed DELETE instead of QUIT by mistake
-                    if gDiag4cRepeat:
+                    if gSavedSelectedSlot > 0:
+                        if gDiag4cRepeat:
+                            PtHideDialog("GUIDialog04c")
+                            gDiag4cRepeat = False
+                            # Need to add delay to briefly show the player selection dialog in between, otherwise you cannot
+                            # tell that it is a new dialog. It would look like a subtle change of text in the current dialog.
+                            PtAtTimeCallback(self.key, .2, kShowDialog4cTimer)
+                            return
+
+                        playerID = 0
+                        if gIsExplorer:
+                            playerID = gPlayerList[gSavedSelectedSlot][1]
+                        else:
+                            playerID = gPlayerList[gSavedSelectedSlot][1]
+                        PtDeletePlayer(playerID)
+                    else:
+                        # else the saved slot number was crunched - not sure how this could ever happen though
                         PtHideDialog("GUIDialog04c")
                         gDiag4cRepeat = False
                         box = ptGUIControlTextBox(GUIDiag4c.dialog.getControlFromTag(k4cStaticID))
                         # set color of this dialog to red
                         box.setForeColor(gRedColor)
-                        box.setStringW(U"WARNING: This action is irreversible! Are you sure you want to DELETE the %s %s?"
-                            % (gIsExplorer and (U"explorer", gPlayerList[gSelectedSlot-gMinusExplorer][0])
-                                            or (U"visitor",  gPlayerList[gSelectedSlot-gMinusVisitor][0])))
-                        # Need to add delay to briefly show the player selection dialog in between, otherwise you cannot
-                        # tell that it is a new dialog. It would look like a subtle change of text in the current dialog.
+                        box.setStringW(U"ERROR: No avatar is selected. Please try again.")
+                        ptGUIControlButton(GUIDiag4c.dialog.getControlFromTag(k4cYesID)).disable()
                         PtAtTimeCallback(self.key, .2, kShowDialog4cTimer)
                         return
-
-                    playerID = 0
-                    if gIsExplorer:
-                        playerID = gPlayerList[gSelectedSlot-gMinusExplorer][1]
-                    else:
-                        playerID = gPlayerList[gSelectedSlot-gMinusVisitor][1]
-                    PtDeletePlayer(playerID)
 
                 elif  tagID == k4cNoID: ## Cancel Delete ##
                     # re-initialize the darn thing or we'll end up with horribly broken hotspots and hilites
@@ -381,7 +393,9 @@ class xDialogStartUp(ptResponder):
                         self.ToggleColor(GUIDiag4a, k4aPlayer03)
 
                     PtHideDialog("GUIDialog04c")
+                    ptGUIControlButton(GUIDiag4c.dialog.getControlFromTag(k4cYesID)).enable()
                     gDiag4cRepeat = False
+                    gSavedSelectedSlot = -1
 
         #################################
         ##         Not Needed          ##
@@ -521,7 +535,23 @@ class xDialogStartUp(ptResponder):
                         ptGUIControlCheckBox(GUIDiag6.dialog.getControlFromTag(k6MaleID)).setChecked(0)
 
     def OnTimer(self, id):
+        global gSavedSelectedSlot
+        
         if id == kShowDialog4cTimer:
+            # create a tell for those that double click when they shouldn't
+            if gSavedSelectedSlot != gSelectedSlot-gMinusExplorer:
+                extra = U"(doubleclicked)"
+            else:
+                extra = U""
+            box = ptGUIControlTextBox(GUIDiag4c.dialog.getControlFromTag(k4cStaticID))
+            # set color of this dialog to red
+            box.setForeColor(gRedColor)
+            # updating the dialog string would allow people to see that they doubled clicked themselves to a different avatar
+            # but I would rather keep it consistent with the first dialog and used the saved slot number.
+            # That way they wouldn't accidently overlook the avatar name change (heh)
+            box.setStringW(U"WARNING%s: This action is irreversible! Are you sure you want to DELETE the %s %s?"
+                % (gIsExplorer and (extra,U"explorer", gPlayerList[gSavedSelectedSlot][0])
+                            or (extra,U"visitor",  gPlayerList[gSavedSelectedSlot][0])))
             PtShowDialog("GUIDialog04c")
 
     ###########################
